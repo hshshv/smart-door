@@ -31,7 +31,7 @@ void Door::UnLock()
 
 bool Door::IsLock()
 {
-  return(Locker.IsOpen());
+  return(!Locker.IsOpen());
 }
 
 bool Door::IsOpen()

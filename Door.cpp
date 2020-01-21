@@ -1,7 +1,7 @@
 #include "Door.h"
 
 Door::Door(int HingePin, int LockerPin, int RedPin, int GreenPin)
-  :Locker(LockerPin), Hinge(HingePin), Led(RedPin, GreenPin, 0)
+  : Locker(LockerPin), Hinge(HingePin), Led(RedPin, GreenPin, 0)
 {
   UnLock();
   Close();
@@ -9,18 +9,25 @@ Door::Door(int HingePin, int LockerPin, int RedPin, int GreenPin)
 
 void Door::Open()
 {
-  Hinge.Open();
+  if (Locker.IsOpen())
+  {
+    Hinge.Open();
+  }
 }
 
 void Door::Close()
 {
+  Locker.Open();
   Hinge.Close();
 }
 
 void Door::Lock()
 {
-  Locker.Close();
-  Led.TurnOn(colors::Red);
+  if (!Hinge.IsOpen())
+  {
+    Locker.Close();
+    Led.TurnOn(colors::Red);
+  }
 }
 
 void Door::UnLock()
@@ -31,10 +38,10 @@ void Door::UnLock()
 
 bool Door::IsLock()
 {
-  return(!Locker.IsOpen());
+  return (!Locker.IsOpen());
 }
 
 bool Door::IsOpen()
 {
-  return(Hinge.IsOpen());
+  return (Hinge.IsOpen());
 }

@@ -6,19 +6,19 @@ locker::locker(int pin)
   Close();
 }
 
-void locker::SetClose(int NewClose)
-{
-  if(NewClose <= 0 && NewClose >= 180)
-  {
-    CloseD = NewClose;
-  }
-}
-
 void locker::SetOpen(int NewOpen)//איכשהו פולימורפיזם
 {
   if(NewOpen <= 0 && NewOpen >= 180)
   {
     OpenD = NewOpen;
+    if(OpenD < 90)
+    {
+      CloseD = OpenD + 90;
+    }
+    else
+    {
+      CloseD = OpenD - 90;
+    }
   }
 }
 

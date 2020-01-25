@@ -210,5 +210,3 @@ void MaxMatrix::shiftDown(bool rotate)
 	}
 	reload();
 }
-
-

@@ -1,47 +1,123 @@
 #include "UltrasonicSensor.h"
 #include "Door.h"
-//אלו הספריות שבהם ייעשה שימוש בהמשך הקוד
+#include "MaxMatrix.h"
 #define Buzzer 11
 #define OpeningDistance 15
-//הגדר: כל פעם שכתוב 'זמזם' הארדואינו יידע שזה אמור להיות 11, וכל פעם שכתוב 'מרחק פתיחה' זה אמור להיות 15
+
+char Sprites[5][10] = {{
+    8, 8,
+    B00000000,
+    B00000000,
+    B00000000,
+    B00000000,
+    B00000000,
+    B00000000,
+    B00000000,
+    B00000000
+  }, {
+    8, 8,
+    B00000000,
+    B00000000,
+    B00000000,
+    B00010000,
+    B00000000,
+    B00000000,
+    B00000000,
+    B00000000
+  }, {
+    8, 8,
+    B00000000,
+    B00000000,
+    B00000000,
+    B00011000,
+    B00011000,
+    B00000000,
+    B00000000,
+    B00000000
+  }, {
+    8, 8,
+    B00000000,
+    B00000000,
+    B00111100,
+    B00111100,
+    B00111100,
+    B00111100,
+    B00000000,
+    B00000000
+  }, {
+    8, 8,
+    B00000000,
+    B01111110,
+    B01111110,
+    B01111110,
+    B01111110,
+    B01111110,
+    B01111110,
+    B00000000
+  }
+};
+
+#define DIN 7
+#define CS 6
+#define CLK 5    //קביעת הפינים צריכה להתבצע כך בגלל אופן פעולת הספרייה 
+#define maxInUse 1 //מספר הלוחות המחוברים
+MaxMatrix matrix(DIN, CS, CLK, maxInUse);
 
 Door door(10, 0, 3, 5);
-//הכרזה על דלת חדשה בשם 'door'
-//מנוע הסרוו שפותח את הדלת יחובר לפין 10, אין מנוע שנועל את הדלת לכן כתוב 0, הלד האדום יחובר לפין 3, והירוק לפין חמש
 //Door(int HingePin, int LockerPin, int RedPin, int GreenPin);//
-UltrasonicSensor ExternalSensor(7, 8); //trig is 7, echo is 8//, הכרזה על החיישן האולטראסוני החיצוני שיחובר לפינים שבע ושמונה
-UltrasonicSensor InternalSensor(4, 6); //like the previous^//הכרזה על החיישן האולטראסוני הפנימי
+UltrasonicSensor ExternalSensor(7, 8); //trig is 7, echo is 8
+UltrasonicSensor InternalSensor(4, 6); //like the previous^
 
 void setup()
 {
-  ExternalSensor.StoppingDistance, InternalSensor.StoppingDistance = OpeningDistance;//מגדיר את מרחק העצירה  של החיישנים ל'מרחק פתיחה' שהוגדר מקודם, כדי שנדע מתי החיישן נחשב 'חסום' ומתי לא
-  pinMode(Buzzer, OUTPUT);//הגדרה של פין של הזמזם כפין יציאה
+  ExternalSensor.StoppingDistance, InternalSensor.StoppingDistance = OpeningDistance;
+  pinMode(Buzzer, OUTPUT);
+  matrix.init();
+  matrix.setIntensity(15);
 }
 
 void loop()
 {
-  if (SomeoneIsComing())//אם מישהו מגיע (קריאה לפונקצייה שנקראת כך)
-  { 
-    while (BothSensorsAreBlocked())//כל עוד יש אנשים בשתי הצדדים
+  if (SomeoneIsComing())
+  {
+    while (!ThereIsSomeoneOnOnlyOneSide())
     {
-      digitalWrite(Buzzer, HIGH);//הפעל את הזמזם
+      digitalWrite(Buzzer, HIGH);
     }
-    digitalWrite(Buzzer, LOW);//כבה את הזמזם
+    digitalWrite(Buzzer, LOW);
 
-    door.Open();//פתח את הדלת
-    delay(5000);//חכה חמש שניות
-    while (SomeoneIsComing()) {} //חכה עד שלא יהיה מישהו ליד הדלת
-    door.Close();//סגור את הדלת
+    door.Open();
+    delay(5000);
+    while (SomeoneIsComing()) {} //כלום
+    door.Close();
   }
 
 }
 
-bool SomeoneIsComing()//הפונקצייה הזו תחזיר 'אמת' אם מישהו מתקרב לדלת, ושקר אם לא
+bool SomeoneIsComing()
 {
   return (InternalSensor.Blocked() || ExternalSensor.Blocked());
 }
 
-bool BothSensorsAreBlocked()//הפונקצייה הזו תחזיר 'אמת' אם יש אנשים בשני הצדדים, ושקר אם לא - אם יש בצד אחד או באף צד
+bool ThereIsSomeoneOnOnlyOneSide()
 {
-  return (InternalSensor.Blocked() && ExternalSensor.Blocked());
+  return (SomeoneIsComing() && !(InternalSensor.Blocked() && ExternalSensor.Blocked()));
+}
+
+float GetLowerDistance()
+{
+  float inter = InternalSensor.Get();
+  float exter = ExternalSensor.Get();
+  if (inter > exter)
+  {
+    return (exter);
+  }
+  return (inter);
+}
+
+void RefreshMatrix()////////**********///////
+{
+  int sprite = round(map(GetLowerDistance(), OpeningDistance, OpeningDistance + 10, 0, 4));
+  char mysprit[10] = {Sprites[sprite]};
+  matrix.writeSprite(0, 0, mysprit);
 }

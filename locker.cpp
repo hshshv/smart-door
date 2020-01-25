@@ -31,7 +31,7 @@ void locker::Close()
 void locker::Open()
 {
   AmIOpened = true;
-  servo.write(OpenD);
+  servo.write(90);
 }
 
 bool locker::IsOpen()

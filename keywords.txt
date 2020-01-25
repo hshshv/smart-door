@@ -1,7 +1,14 @@
-Door	KEYWORD1
-Close	KEYWORD2
-Open	KEYWORD2
-Lock	KEYWORD2
-UnLock	KEYWORD2
-IsLock	KEYWORD2
-IsOpen	KEYWORD2
+
+MaxMatrix	KEYWORD1
+init		KEYWORD2
+clear		KEYWORD2
+setCommand	KEYWORD2
+setIntensity	KEYWORD2
+setColumn	KEYWORD2
+setColumnAll	KEYWORD2
+setDot		KEYWORD2
+writeSprite	KEYWORD2
+shiftLeft	KEYWORD2
+shiftRight	KEYWORD2
+shiftUp		KEYWORD2
+shiftDown	KEYWORD2

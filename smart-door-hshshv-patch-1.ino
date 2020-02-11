@@ -3,7 +3,7 @@
 #include "Servo.h"
 #include "RGBLed.h"
 #define BuzzerPin 11
-
+/*
 char Sprites[5][10] = {{
     8, 8,
     B00000000,
@@ -56,7 +56,7 @@ char Sprites[5][10] = {{
     B00000000
   }
 };
-
+*/
 #define openedOutward 0
 #define closed 90
 #define openedInward 180

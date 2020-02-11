@@ -7,7 +7,7 @@ UltrasonicSensor::UltrasonicSensor (int Trig, int Echo)
 
 UltrasonicSensor::UltrasonicSensor()
 {
-  UltrasonicSensor(4,5);
+  UltrasonicSensor(4, 5);
 }
 
 void UltrasonicSensor::SetPins(int Trig, int Echo)
@@ -20,11 +20,15 @@ void UltrasonicSensor::SetPins(int Trig, int Echo)
 
 bool UltrasonicSensor::Blocked()
 {
+  return (Blocked(1));
+}
+bool UltrasonicSensor::Blocked(byte times)
+{
   if (StoppingDistance > 150 || StoppingDistance < 3)
   {
     StoppingDistance = 10;
   }
-  return (Get() < StoppingDistance);
+  return (GetAvg(times) > StoppingDistance);
 }
 
 float UltrasonicSensor::Get()
@@ -37,7 +41,7 @@ float UltrasonicSensor::Get()
 
 float UltrasonicSensor::GetAvg()
 {
-  GetAvg(5);
+  return (GetAvg(5));
 }
 
 float UltrasonicSensor::GetAvg(int times)
@@ -49,4 +53,9 @@ float UltrasonicSensor::GetAvg(int times)
     delay(1);
   }
   return (sum / times);
+}
+
+bool UltrasonicSensor::Activated()
+{
+  return (Blocked());
 }

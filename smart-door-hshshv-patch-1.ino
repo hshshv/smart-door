@@ -17,7 +17,7 @@
 #define ServoPin 8
 #define DIN 7
 #define CS 6
-#define CLK 5    //קביעת הפינים צריכה להתבצע כך בגלל אופן פעולת הספרייה 
+#define CLK 5     
 #define maxInUse 1 //מספר הלוחות המחוברים
 
 MFRC522 mfrc522(SS_PIN, RST_PIN);   // Create MFRC522 instance.
@@ -40,10 +40,10 @@ void setup()
 }
 
 void loop()
-{/*
+{
   if (SomeoneIsComing())
   {
-    while (!ThereIsSomeoneOnOnlyOneSide())
+    while (BothSidesAreBlocked())
     {
       Buzzer.TurnOn();
     }
@@ -53,7 +53,7 @@ void loop()
     delay(5000);
     while (SomeoneIsComing()) {} //כלום
     CloseDoor();
-  }*/
+  }
   
   if(ReadChips())
   {
@@ -69,9 +69,9 @@ bool SomeoneIsComing()
   return (InternalSensor.Activated() || ExternalSensor.Activated());
 }
 
-bool ThereIsSomeoneOnOnlyOneSide()
+bool BothSidesAreBlocked()
 {
-  return (SomeoneIsComing() && !(InternalSensor.Activated() && ExternalSensor.Activated()));
+  return (InternalSensor.Activated() || ExternalSensor.Activated());
 }
 /*
   float GetLowerDistance()
@@ -108,7 +108,6 @@ void OpenDoor()
   {
     servo.write(openedOutward);
   }
-
   Led.TurnOn(colors::Green);
 }
 

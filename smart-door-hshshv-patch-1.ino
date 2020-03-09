@@ -2,26 +2,30 @@
 #include "MaxMatrix.h"
 #include "Servo.h"
 #include "RGBLed.h"
-
+//#include "DFPlayer_Mini_Mp3.h"
 
 #include <SPI.h>
 #include "MFRC522.h"
+
+#include <Wire.h>
+#include "LQ.h"
 
 #define openedOutward 0
 #define closed 90
 #define openedInward 180
 
-#define SS_PIN 10
+#define SDA_PIN 10
 #define RST_PIN 9
 #define BuzzerPin 2
 #define ServoPin 8
 #define DIN 7
 #define CS 6
-#define CLK 5     
+//#define CLK 5
 #define maxInUse 1 //מספר הלוחות המחוברים
 
-MFRC522 mfrc522(SS_PIN, RST_PIN);   // Create MFRC522 instance.
-MaxMatrix matrix(DIN, CS, CLK, maxInUse);
+LQ lcd(0x27, 16, 2);
+MFRC522 mfrc522(SDA_PIN, RST_PIN);   // Create MFRC522 instance.
+//MaxMatrix matrix(DIN, CS, CLK, maxInUse);
 AnalogSensor ExternalSensor(A0);
 AnalogSensor InternalSensor(A1);
 Led Buzzer(BuzzerPin);
@@ -37,12 +41,17 @@ void setup()
   servo.attach(ServoPin);
   SPI.begin();      // Initiate  SPI bus
   mfrc522.PCD_Init();   // Initiate MFRC522
+  Serial.begin(9600);
+  lcd.begin();
+  lcd.backlight();
+  Printo("mashoo chip", 0, true);
 }
 
 void loop()
 {
   if (SomeoneIsComing())
   {
+    Printo("sensor alert!", 0, false);
     while (BothSidesAreBlocked())
     {
       Buzzer.TurnOn();
@@ -54,9 +63,10 @@ void loop()
     while (SomeoneIsComing()) {} //כלום
     CloseDoor();
   }
-  
-  if(ReadChips())
+
+  if (ReadChips())
   {
+    Printo("chip detected", 0, false);
     OpenDoor();
     delay(5000);
     while (SomeoneIsComing()) {} //כלום
@@ -94,12 +104,14 @@ bool BothSidesAreBlocked()
 */
 void CloseDoor()
 {
+  Printo("closing door", 1, false);
   servo.write(closed);
   Led.TurnOn(colors::Red);
 }
 
 void OpenDoor()
 {
+  Printo("opening door", 1, false);
   if (ExternalSensor.Activated())
   {
     servo.write(openedInward);
@@ -115,12 +127,12 @@ bool ReadChips()
 {
   if ( ! mfrc522.PICC_IsNewCardPresent())
   {
-    return;
+    return (false);
   }
   // Select one of the cards
   if ( ! mfrc522.PICC_ReadCardSerial())
   {
-    return;
+    return (false);
   }
   //Show UID on serial monitor
   String content = "";
@@ -140,4 +152,15 @@ bool ReadChips()
   {
     return (false);
   }
+}
+
+void Printo(String text, int line, bool Clear)
+{
+  if (Clear)
+  {
+    lcd.clear();
+  }
+  lcd.setCursor(0, line);
+  lcd.print(text);
+  /*/*//*/*/
 }

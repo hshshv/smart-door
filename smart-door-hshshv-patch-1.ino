@@ -2,7 +2,9 @@
 #include "MaxMatrix.h"
 #include "Servo.h"
 #include "RGBLed.h"
-//#include "DFPlayer_Mini_Mp3.h"
+#include "SoftwareSerial.h"
+#include "DFRobotDFPlayerMini.h"
+
 
 #include <SPI.h>
 #include "MFRC522.h"
@@ -18,18 +20,23 @@
 #define RST_PIN 9
 #define BuzzerPin 2
 #define ServoPin 8
-#define DIN 7
-#define CS 6
+//#define DIN 7
+//#define CS 6
 //#define CLK 5
 #define maxInUse 1 //מספר הלוחות המחוברים
+#define TX 2
+#define RX 3
+#define Busy_pin 5
+SoftwareSerial SOS(RX, TX);
+DFRobotDFPlayerMini Player;
 
 LQ lcd(0x27, 16, 2);
 MFRC522 mfrc522(SDA_PIN, RST_PIN);   // Create MFRC522 instance.
 //MaxMatrix matrix(DIN, CS, CLK, maxInUse);
 AnalogSensor ExternalSensor(A0);
 AnalogSensor InternalSensor(A1);
-Led Buzzer(BuzzerPin);
-
+//Led Buzzer(BuzzerPin);
+DigitalSensor Bizi(Busy_pin);
 Servo servo;
 RGBLed Led(3, 5, 0);
 
@@ -45,6 +52,16 @@ void setup()
   lcd.begin();
   lcd.backlight();
   Printo("mashoo chip", 0, true);
+  SOS.begin(9600);
+  Player.volume(30); // 0 - 30
+  if(Player.begin(SOS))//הצליח להתחיל את הנגן
+  {
+    Printo("MP3 added", 0, true);
+  }
+  else
+  {
+    Printo("FAIL to add MP3", 0, true);
+  }
 }
 
 void loop()
@@ -54,10 +71,11 @@ void loop()
     Printo("sensor alert!", 0, false);
     while (BothSidesAreBlocked())
     {
-      Buzzer.TurnOn();
+      if(!Bizi.Activated())
+      {
+        Player.play(0);
+      }
     }
-    Buzzer.TurnOff();
-
     OpenDoor();
     delay(5000);
     while (SomeoneIsComing()) {} //כלום

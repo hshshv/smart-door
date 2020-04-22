@@ -18,7 +18,7 @@
 
 #define SDA_PIN 10
 #define RST_PIN 9
-#define BuzzerPin 2
+//#define BuzzerPin 2
 #define ServoPin 8
 //#define DIN 7
 //#define CS 6
@@ -26,7 +26,7 @@
 #define maxInUse 1 //מספר הלוחות המחוברים
 #define TX 2
 #define RX 3
-#define Busy_pin 5
+#define Busy_pin 6
 SoftwareSerial SOS(RX, TX);
 DFRobotDFPlayerMini Player;
 
@@ -38,7 +38,7 @@ AnalogSensor InternalSensor(A1);
 //Led Buzzer(BuzzerPin);
 DigitalSensor Bizi(Busy_pin);
 Servo servo;
-RGBLed Led(3, 5, 0);
+RGBLed Led(4, 5, 0);
 
 void setup()
 {

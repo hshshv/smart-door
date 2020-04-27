@@ -24,7 +24,7 @@
 //#define CS 6
 //#define CLK 5
 #define maxInUse 1 //מספר הלוחות המחוברים
-#define TX 2
+#define TX 2 //TX of the player tp pin 2 of the arduino
 #define RX 3
 #define Busy_pin 6
 SoftwareSerial SOS(RX, TX);

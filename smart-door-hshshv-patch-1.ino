@@ -2,9 +2,14 @@
 #include "MaxMatrix.h"
 #include "Servo.h"
 #include "RGBLed.h"
+
+#include "Arduino.h"
 #include "SoftwareSerial.h"
 #include "DFRobotDFPlayerMini.h"
-
+#define TX 3
+#define RX 2
+SoftwareSerial mySoftwareSerial(RX, TX); // RX, TX
+DFRobotDFPlayerMini myDFPlayer;
 
 #include <SPI.h>
 #include "MFRC522.h"
@@ -16,26 +21,17 @@
 #define closed 90
 #define openedInward 180
 
-#define SDA_PIN 10
-#define RST_PIN 9
-//#define BuzzerPin 2
+#define SDA_PIN 100
+#define RST_PIN 90
+#define BuzzerPin 2
 #define ServoPin 8
-//#define DIN 7
-//#define CS 6
-//#define CLK 5
-#define maxInUse 1 //מספר הלוחות המחוברים
-#define TX 2 //TX of the player tp pin 2 of the arduino
-#define RX 3
 #define Busy_pin 6
-SoftwareSerial SOS(RX, TX);
 DFRobotDFPlayerMini Player;
 
 LQ lcd(0x27, 16, 2);
 MFRC522 mfrc522(SDA_PIN, RST_PIN);   // Create MFRC522 instance.
-//MaxMatrix matrix(DIN, CS, CLK, maxInUse);
 AnalogSensor ExternalSensor(A0);
 AnalogSensor InternalSensor(A1);
-//Led Buzzer(BuzzerPin);
 DigitalSensor Bizi(Busy_pin);
 Servo servo;
 RGBLed Led(4, 5, 0);
@@ -48,22 +44,32 @@ void setup()
   servo.attach(ServoPin);
   SPI.begin();      // Initiate  SPI bus
   mfrc522.PCD_Init();   // Initiate MFRC522
+  mySoftwareSerial.begin(9600);
   Serial.begin(9600);
+  myDFPlayer.begin(mySoftwareSerial);
   lcd.begin();
   lcd.backlight();
   Printo("mashoo chip", 0, true);
-  SOS.begin(9600);
-  Player.volume(30); // 0 - 30
-  if(Player.begin(SOS))//הצליח להתחיל את הנגן
-  {
-    Printo("MP3 added", 0, true);
-  }
-  else
-  {
-    Printo("FAIL to add MP3", 0, true);
-  }
-}
 
+
+  Serial.println();
+  Serial.println(F("DFRobot DFPlayer Mini Demo"));
+  Serial.println(F("Initializing DFPlayer ... (May take 3~5 seconds)"));
+
+  if (!myDFPlayer.begin(mySoftwareSerial)) {  //Use softwareSerial to communicate with mp3.
+    Serial.println(F("Unable to begin:"));
+    Serial.println(F("1.Please recheck the connection!"));
+    Serial.println(F("2.Please insert the SD card!"));
+    while (true) {
+      delay(0); // Code to compatible with ESP8266 watch dog.
+    }
+  }
+
+
+  myDFPlayer.volume(30);  //Set volume value. From 0 to 30
+  myDFPlayer.play(1);
+
+}
 void loop()
 {
   if (SomeoneIsComing())
@@ -71,9 +77,9 @@ void loop()
     Printo("sensor alert!", 0, false);
     while (BothSidesAreBlocked())
     {
-      if(!Bizi.Activated())
+      if (!Bizi.Activated())
       {
-        Player.play(0);
+        Player.play(1);
       }
     }
     OpenDoor();
@@ -101,9 +107,9 @@ bool BothSidesAreBlocked()
 {
   return (InternalSensor.Activated() || ExternalSensor.Activated());
 }
-/*
-  float GetLowerDistance()
-  {
+
+float GetLowerDistance()
+{
   float inter = InternalSensor.Get();
   float exter = ExternalSensor.Get();
   if (inter > exter)
@@ -111,15 +117,8 @@ bool BothSidesAreBlocked()
     return (exter);
   }
   return (inter);
-  }
-  /*
-  void RefreshMatrix()
-  {
-  int sprite = round(map(GetLowerDistance(), OpeningDistance, OpeningDistance + 10, 0, 4));
-  char mysprit[10] = {Sprites[sprite]};
-  matrix.writeSprite(0, 0, mysprit);
-  }
-*/
+}
+
 void CloseDoor()
 {
   Printo("closing door", 1, false);
@@ -180,5 +179,4 @@ void Printo(String text, int line, bool Clear)
   }
   lcd.setCursor(0, line);
   lcd.print(text);
-  /*/*//*/*/
 }

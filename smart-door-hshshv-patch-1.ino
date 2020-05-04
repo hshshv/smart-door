@@ -21,8 +21,8 @@ DFRobotDFPlayerMini myDFPlayer;
 #define closed 90
 #define openedInward 180
 
-#define SDA_PIN 100
-#define RST_PIN 90
+#define SDA_PIN 10
+#define RST_PIN 9
 #define BuzzerPin 2
 #define ServoPin 8
 #define Busy_pin 6

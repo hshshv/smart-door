@@ -24,13 +24,12 @@
 
 #define SDA_PIN 10
 #define RST_PIN 9
-#define BuzzerPin 2
 #define ServoPin 8
 #define Busy_pin 6
 
-#define OpeningSund 1
+#define OpeningSund 3
 #define BuzzerSound 2
-#define StartSound 3
+#define StartSound 1
 
 //----------יצירת אובייקטים
 
@@ -55,6 +54,8 @@ void setup()
 {
   Serial.begin(9600);
   
+  Serial.println("SetUp");
+  
   ExternalSensor.SetLevel(400);
   InternalSensor.SetLevel(400);
   
@@ -63,23 +64,37 @@ void setup()
   SPI.begin();      // Initiate  SPI bus
   mfrc522.PCD_Init();   // Initiate MFRC522
   
-  mySoftwareSerial.begin(9600);
-  Player.begin(mySoftwareSerial);
+  Serial.println("SPI started");
   
+  mySoftwareSerial.begin(9600);
+
+  Serial.println("SoftwareSerial started");
+  
+  if(!Player.begin(mySoftwareSerial))
+  {
+    Serial.println("Problems with the player");
+  }
+  
+
+  Serial.println("player started");
   
   lcd.begin();
   lcd.backlight();
   Printo("mashoo chip", 0, true);
 
+  Serial.println("LCD started");
+
   Player.volume(30); 
-  Player.play(StartSound);
+  Player.play(1);
+
+  Serial.println("player is playing");
 
 }
 
 //----------לוופ
 
 void loop()
-{
+{/*
   if (SomeoneIsComing())
   {
     Printo("sensor alert!", 0, true);
@@ -103,6 +118,7 @@ void loop()
     while (SomeoneIsComing()) {} //כלום
     CloseDoor();
   }
+  */
 }
 
 //----------פונקציות

@@ -7,8 +7,6 @@
 //#include "Arduino.h"// לא נחוץ בהכרח
 #include "SoftwareSerial.h"
 #include "DFRobotDFPlayerMini.h"
-#define TX 3
-#define RX 2//תחליף, אם זה לא עובד  
 
 #include <SPI.h>
 #include "MFRC522.h"
@@ -22,13 +20,16 @@
 #define closed 90
 #define openedInward 180
 
-#define SDA_PIN 10
-#define RST_PIN 9
+#define TX 10
+#define RX 11//תחליף, אם זה לא עובד  
+
+#define SDA_PIN 3
+#define RST_PIN 2
 #define ServoPin 8
 #define Busy_pin 6
 
-#define OpeningSund 3
-#define BuzzerSound 2
+#define OpeningSund 1
+#define BuzzerSound 1
 #define StartSound 1
 
 //----------יצירת אובייקטים
@@ -36,7 +37,7 @@
 SoftwareSerial mySoftwareSerial(RX, TX);
 DFRobotDFPlayerMini Player;
 
-LQ lcd(0x27, 16, 2);
+LQ lcd(0x3F, 16, 2);
 
 MFRC522 mfrc522(SDA_PIN, RST_PIN);   // Create MFRC522 instance.
 
@@ -53,39 +54,41 @@ RGBLed Led(4, 5, 0);
 void setup()
 {
   Serial.begin(9600);
-  
+
   Serial.println("SetUp");
-  
+
   ExternalSensor.SetLevel(400);
   InternalSensor.SetLevel(400);
-  
+
   servo.attach(ServoPin);
-  
+
   SPI.begin();      // Initiate  SPI bus
   mfrc522.PCD_Init();   // Initiate MFRC522
-  
+
   Serial.println("SPI started");
-  
+
   mySoftwareSerial.begin(9600);
 
   Serial.println("SoftwareSerial started");
-  
-  if(!Player.begin(mySoftwareSerial))
+
+  if (!Player.begin(mySoftwareSerial))
   {
-    Serial.println("Problems with the player");
+    Serial.println("Problems with the player!!!");
   }
-  
+
 
   Serial.println("player started");
-  
+
+  Player.volume(30);
+  Player.play(1);
+
+
   lcd.begin();
   lcd.backlight();
   Printo("mashoo chip", 0, true);
 
   Serial.println("LCD started");
 
-  Player.volume(30); 
-  Player.play(1);
 
   Serial.println("player is playing");
 
@@ -98,11 +101,11 @@ void loop()
   if (SomeoneIsComing())
   {
     Printo("sensor alert!", 0, true);
-    if(BothSidesAreBlocked())
+    if (BothSidesAreBlocked())
     {
-      Printo("be careful!", 1, false);//יש מישהו בצדד השני  
+      Printo("be careful!", 1, false);//יש מישהו בצדד השני
       Player.play(BuzzerSound);
-      while(BothSidesAreBlocked()){}//כל עוד יש אנשים בשני הצדדים] אל תעשה כלום  
+      while (BothSidesAreBlocked()) {} //כל עוד יש אנשים בשני הצדדים] אל תעשה כלום
     }
     OpenDoor();
     delay(5000); //חכה חמש שניות
@@ -118,6 +121,7 @@ void loop()
     while (SomeoneIsComing()) {} //כלום
     CloseDoor();
   }
+
 }
 
 //----------פונקציות
@@ -132,8 +136,8 @@ bool BothSidesAreBlocked()
   return (InternalSensor.Activated() || ExternalSensor.Activated());
 }
 /*
-float GetLowerDistance()
-{
+  float GetLowerDistance()
+  {
   float inter = InternalSensor.Get();
   float exter = ExternalSensor.Get();
   if (inter > exter)
@@ -141,7 +145,7 @@ float GetLowerDistance()
     return (exter);
   }
   return (inter);
-}
+  }
 */
 void CloseDoor()
 {

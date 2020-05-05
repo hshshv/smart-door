@@ -94,7 +94,7 @@ void setup()
 //----------לוופ
 
 void loop()
-{/*
+{
   if (SomeoneIsComing())
   {
     Printo("sensor alert!", 0, true);
@@ -118,7 +118,6 @@ void loop()
     while (SomeoneIsComing()) {} //כלום
     CloseDoor();
   }
-  */
 }
 
 //----------פונקציות

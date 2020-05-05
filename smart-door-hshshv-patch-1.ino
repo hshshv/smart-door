@@ -1,21 +1,22 @@
+//----------ספריות בשימוש
+
 #include "Sensors.h"
-#include "MaxMatrix.h"
 #include "Servo.h"
 #include "RGBLed.h"
 
-#include "Arduino.h"
+//#include "Arduino.h"// לא נחוץ בהכרח
 #include "SoftwareSerial.h"
 #include "DFRobotDFPlayerMini.h"
 #define TX 3
-#define RX 2
-SoftwareSerial mySoftwareSerial(RX, TX); // RX, TX
-DFRobotDFPlayerMini myDFPlayer;
+#define RX 2//תחליף, אם זה לא עובד  
 
 #include <SPI.h>
 #include "MFRC522.h"
 
 #include <Wire.h>
 #include "LQ.h"
+
+//----------הגדרות
 
 #define openedOutward 0
 #define closed 90
@@ -26,65 +27,71 @@ DFRobotDFPlayerMini myDFPlayer;
 #define BuzzerPin 2
 #define ServoPin 8
 #define Busy_pin 6
+
+#define OpeningSund 1
+#define BuzzerSound 2
+#define StartSound 3
+
+//----------יצירת אובייקטים
+
+SoftwareSerial mySoftwareSerial(RX, TX);
 DFRobotDFPlayerMini Player;
 
 LQ lcd(0x27, 16, 2);
+
 MFRC522 mfrc522(SDA_PIN, RST_PIN);   // Create MFRC522 instance.
+
 AnalogSensor ExternalSensor(A0);
 AnalogSensor InternalSensor(A1);
+
 DigitalSensor Bizi(Busy_pin);
 Servo servo;
+
 RGBLed Led(4, 5, 0);
+
+//----------אתחול
 
 void setup()
 {
-  InternalSensor.InPin = 1;
+  Serial.begin(9600);
+  
   ExternalSensor.SetLevel(400);
   InternalSensor.SetLevel(400);
+  
   servo.attach(ServoPin);
+  
   SPI.begin();      // Initiate  SPI bus
   mfrc522.PCD_Init();   // Initiate MFRC522
+  
   mySoftwareSerial.begin(9600);
-  Serial.begin(9600);
-  myDFPlayer.begin(mySoftwareSerial);
+  Player.begin(mySoftwareSerial);
+  
+  
   lcd.begin();
   lcd.backlight();
   Printo("mashoo chip", 0, true);
 
-
-  Serial.println();
-  Serial.println(F("DFRobot DFPlayer Mini Demo"));
-  Serial.println(F("Initializing DFPlayer ... (May take 3~5 seconds)"));
-
-  if (!myDFPlayer.begin(mySoftwareSerial)) {  //Use softwareSerial to communicate with mp3.
-    Serial.println(F("Unable to begin:"));
-    Serial.println(F("1.Please recheck the connection!"));
-    Serial.println(F("2.Please insert the SD card!"));
-    while (true) {
-      delay(0); // Code to compatible with ESP8266 watch dog.
-    }
-  }
-
-
-  myDFPlayer.volume(30);  //Set volume value. From 0 to 30
-  myDFPlayer.play(1);
+  Player.volume(30); 
+  Player.play(StartSound);
 
 }
+
+//----------לוופ
+
 void loop()
 {
   if (SomeoneIsComing())
   {
-    Printo("sensor alert!", 0, false);
-    while (BothSidesAreBlocked())
+    Printo("sensor alert!", 0, true);
+    if(BothSidesAreBlocked())
     {
-      if (!Bizi.Activated())
-      {
-        Player.play(1);
-      }
+      Printo("be careful!", 1, false);//יש מישהו בצדד השני  
+      Player.play(BuzzerSound);
+      while(BothSidesAreBlocked()){}//כל עוד יש אנשים בשני הצדדים] אל תעשה כלום  
     }
     OpenDoor();
-    delay(5000);
-    while (SomeoneIsComing()) {} //כלום
+    delay(5000); //חכה חמש שניות
+    while (SomeoneIsComing()) {} //אל תסגור את הדלת כל עוד יש מישהו לידה
     CloseDoor();
   }
 
@@ -98,6 +105,8 @@ void loop()
   }
 }
 
+//----------פונקציות
+
 bool SomeoneIsComing()
 {
   return (InternalSensor.Activated() || ExternalSensor.Activated());
@@ -107,7 +116,7 @@ bool BothSidesAreBlocked()
 {
   return (InternalSensor.Activated() || ExternalSensor.Activated());
 }
-
+/*
 float GetLowerDistance()
 {
   float inter = InternalSensor.Get();
@@ -118,7 +127,7 @@ float GetLowerDistance()
   }
   return (inter);
 }
-
+*/
 void CloseDoor()
 {
   Printo("closing door", 1, false);

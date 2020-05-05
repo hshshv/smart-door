@@ -6,9 +6,8 @@ AnalogSensor::AnalogSensor(byte inPin, int activatedLevel)
   ActivatedLevel = activatedLevel;
 }
 
-AnalogSensor::AnalogSensor(byte inPin)
+AnalogSensor::AnalogSensor(byte inPin):  AnalogSensor(inPin, 512)
 {
-  AnalogSensor(inPin, 512);
 }
 
 void AnalogSensor::SetLevel(int NewLevel)

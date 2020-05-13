@@ -18,28 +18,32 @@
 
 #define openedOutward 0
 #define closed 90
-#define openedInward 180
+#define openedInward 170
 
-#define TX 10
-#define RX 11//תחליף, אם זה לא עובד  
+#define TX 3
+#define RX 2//תחליף, אם זה לא עובד  
+//זה תמיד צריך להיות טקס שלוש ורקס ארבע
+#define SDA_PIN 10
+#define RST_PIN 9
+#define SCK_PIN 13 ///
+#define MISO_PIN 12 /// 
+#define MOSI_PIN 11 /// לא באמת צריכים הגדרה,
 
-#define SDA_PIN 3
-#define RST_PIN 2
 #define ServoPin 8
 #define Busy_pin 6
 
-#define OpeningSund 1
-#define BuzzerSound 1
-#define StartSound 1
+#define OpeningSound 1
+#define BuzzerSound 2
+#define StartSound 3
 
 //----------יצירת אובייקטים
 
 SoftwareSerial mySoftwareSerial(RX, TX);
 DFRobotDFPlayerMini Player;
 
-LQ lcd(0x3F, 16, 2);
+LQ lcd(0x27, 16, 2);
 
-MFRC522 mfrc522(SDA_PIN, RST_PIN);   // Create MFRC522 instance.
+MFRC522 mfrc522(SDA_PIN, RST_PIN);
 
 AnalogSensor ExternalSensor(A0);
 AnalogSensor InternalSensor(A1);
@@ -47,7 +51,9 @@ AnalogSensor InternalSensor(A1);
 DigitalSensor Bizi(Busy_pin);
 Servo servo;
 
-RGBLed Led(4, 5, 0);
+#define BlueLedPin 4
+#define GreenLedPin 5
+//RGBLed Led(0, 5, 4);
 
 //----------אתחול
 
@@ -80,20 +86,23 @@ void setup()
   Serial.println("player started");
 
   Player.volume(30);
-  Player.play(1);
+  Player.play(StartSound);
 
+  Serial.print("Player is playing");
 
   lcd.begin();
   lcd.backlight();
-  Printo("mashoo chip", 0, true);
-
+  Printo("ze tov3", 0, true);
   Serial.println("LCD started");
-
-
-  Serial.println("player is playing");
-
+  /*
+   */
 }
 
+void Test()
+{
+  while (!ReadChips()) {}
+  Serial.println("Chip added");
+}
 //----------לוופ
 
 void loop()
@@ -122,9 +131,27 @@ void loop()
     CloseDoor();
   }
 
+  //Serial.println(ReadChips());
 }
 
 //----------פונקציות
+
+void TurnOnLed(bool IfItsBlueThenItsTrue)
+{
+  if (IfItsBlueThenItsTrue)
+  {
+    digitalWrite(GreenLedPin, LOW);
+    delay(50);
+    digitalWrite(BlueLedPin, HIGH);
+  }
+  else
+  {
+    digitalWrite(BlueLedPin, LOW);
+    delay(50);
+    digitalWrite(GreenLedPin, HIGH);
+  }
+
+}
 
 bool SomeoneIsComing()
 {
@@ -151,7 +178,7 @@ void CloseDoor()
 {
   Printo("closing door", 1, false);
   servo.write(closed);
-  Led.TurnOn(colors::Red);
+  TurnOnLed(true);
 }
 
 void OpenDoor()
@@ -165,18 +192,21 @@ void OpenDoor()
   {
     servo.write(openedOutward);
   }
-  Led.TurnOn(colors::Green);
+  Player.play(OpeningSound);
+  TurnOnLed(false);
 }
 
 bool ReadChips()
 {
   if ( ! mfrc522.PICC_IsNewCardPresent())
   {
+    //Serial.println("no card is here");
     return (false);
   }
   // Select one of the cards
   if ( ! mfrc522.PICC_ReadCardSerial())
   {
+    Serial.println("eror");
     return (false);
   }
   //Show UID on serial monitor
@@ -188,6 +218,7 @@ bool ReadChips()
     content.concat(String(mfrc522.uid.uidByte[i], HEX));
   }
   content.toUpperCase();
+  Serial.println(content.substring(1));
   if (content.substring(1) == "A9 68 62 A3") //change here the UID of the card/cards that you want to give access
   {
     return (true);

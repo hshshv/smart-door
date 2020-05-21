@@ -142,13 +142,13 @@ void TurnOnLed(bool IfItsBlueThenItsTrue)
   {
     digitalWrite(GreenLedPin, LOW);
     delay(50);
-    digitalWrite(BlueLedPin, HIGH);
+    analogWrite(BlueLedPin, 255);
   }
   else
   {
     digitalWrite(BlueLedPin, LOW);
     delay(50);
-    digitalWrite(GreenLedPin, HIGH);
+    analogWrite(GreenLedPin, 255);
   }
 
 }
